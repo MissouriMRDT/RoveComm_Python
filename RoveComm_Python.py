@@ -17,6 +17,7 @@ print (test_byte)
 print (bytes, address)
 print (struct.unpack('L', test_byte))
 '''
+
 ROVECOMM_PORT = 11000
 ROVECOMM_VERSION       = 1        #ToDo: Change in RC2
 ROVECOMM_HEADER_FORMAT = ">BHBHH"
@@ -35,14 +36,14 @@ class RoveCommEthernetUdp:
 		self.RoveCommSocket = socket.socket(type = socket.SOCK_DGRAM)
 		self.RoveCommSocket.bind(("", self.rove_comm_port))
 		
-	def write(  self, data_id, data_size, data): #RC2: add data_type, data_count
+	def write(self, data_id, data_size, data): #RC2: add data_type, data_count
 		if not isinstance(data, bytes):	
 			raise ValueError('Must pass data as a packed struct, Data: ' + str(data))
 		
 		rovecomm_packet = struct.pack(ROVECOMM_HEADER_FORMAT, ROVECOMM_VERSION, ROVCOMM_SEQ_NUM, ROVECOMM_FLAGS, data_id, data_size) + data #Todo: Debug
 		
 		for subscriber in self.subscribers:
-			RoveCommSocket.sendto(rovecomm_packet, (subscriber, 11000))
+			self.RoveCommSocket.sendto(rovecomm_packet, (subscriber))
 		
 	def writeTo(self, data_id, data_size, data, ip_address, port=ROVECOMM_PORT): #RC2: add data_type, data_count
 		if not isinstance(data, bytes):	
@@ -56,7 +57,7 @@ class RoveCommEthernetUdp:
 		packet, remote_ip = self.RoveCommSocket.recvfrom(1024)
 		header_size = struct.calcsize(ROVECOMM_HEADER_FORMAT)
 		
-		rovecomm_version, seq_num, flags, data_id, data_size = struct.unpact(ROVECOMM_HEADER_FORMAT, packet[0:header_size])
+		rovecomm_version, seq_num, flags, data_id, data_size = struct.unpack(ROVECOMM_HEADER_FORMAT, packet[0:header_size])
 		data = packet[header_size:]
 		
 		if(data_id == ROVECOMM_SUBSCRIBE_REQUEST):
@@ -68,18 +69,4 @@ class RoveCommEthernetUdp:
 		
 		return (data_id, data_size, data)
 			
-	
 	#def readFrom ToDo: Change to getLastIp for C++ and Python
-
-'''
-local_host_ip = "127.0.0.1"
-	
-RoveComm = RoveCommEthernetUdp()
-
-RoveComm.writeTo(5, 6, struct.pack('>L', 7), local_host_ip)
-my_data_id, my_data_size, my_data = RoveComm.read()
-print(my_data_id, my_datpythoa_size)
-print(struct.unpack('>L', my_data))
-'''
-
-	
