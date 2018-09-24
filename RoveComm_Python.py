@@ -19,8 +19,7 @@ print (struct.unpack('L', test_byte))
 '''
 
 ROVECOMM_PORT = 11000
-ROVECOMM_VERSION       = 2
-ROVECOMM_HEADER_FORMAT = ">BHBB"
+ROVECOMM_HEADER_FORMAT = ">HBB"
 
 ROVECOMM_SUBSCRIBE_REQUEST   = 3
 ROVECOMM_UNSUBSCRIBE_REQUEST = 4
@@ -82,7 +81,7 @@ class RoveCommEthernetUdp:
 		if not isinstance(packet.data, tuple):	
 			raise ValueError('Must pass data as a list, Data: ' + str(data))
 					
-		rovecomm_packet = struct.pack(ROVECOMM_HEADER_FORMAT, ROVECOMM_VERSION, packet.data_id, types_byte_to_int[packet.data_type], packet.data_count)
+		rovecomm_packet = struct.pack(ROVECOMM_HEADER_FORMAT, packet.data_id, types_byte_to_int[packet.data_type], packet.data_count)
 		
 		for i in packet.data:
 			rovecomm_packet = rovecomm_packet + struct.pack('>' + packet.data_type, i)
@@ -98,7 +97,7 @@ class RoveCommEthernetUdp:
 			packet, remote_ip = self.RoveCommSocket.recvfrom(1024)
 			header_size = struct.calcsize(ROVECOMM_HEADER_FORMAT)
 		
-			rovecomm_version, data_id, data_type, data_count = struct.unpack(ROVECOMM_HEADER_FORMAT, packet[0:header_size])
+			data_id, data_type, data_count = struct.unpack(ROVECOMM_HEADER_FORMAT, packet[0:header_size])
 			data = packet[header_size:]
 		
 			if(data_id == ROVECOMM_SUBSCRIBE_REQUEST):
