@@ -25,21 +25,21 @@ ROVECOMM_SUBSCRIBE_REQUEST   = 3
 ROVECOMM_UNSUBSCRIBE_REQUEST = 4
 
 types_int_to_byte  = {
-						10:'b',
-						11:'B',
-						20:'h',
-						21:'H',
-						40:'l',
-						41:'L',
+						1:'b',
+						2:'B',
+						3:'h',
+						4:'H',
+						5:'l',
+						6:'L',
 					  }
 					  
 types_byte_to_int  = {
-						'b':10,
-						'B':11,
-						'h':20,
-						'H':21,
-						'l':40,
-						'L':41,
+						'b':1,
+						'B':2,
+						'h':3,
+						'H':4,
+						'l':5,
+						'L':6,
 					  }
 					  
 					  
