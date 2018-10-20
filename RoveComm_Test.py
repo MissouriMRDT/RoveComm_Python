@@ -25,3 +25,7 @@ RoveComm.writeTo(10, 11, struct.pack('L', 7), local_host_ip)
 
 conda activate RoveComm_Python
 cd C:\Users\andre\Documents\Rover\GitHub\Libraries\RoveComm_Python
+cd C:\Users\andre\Documents\Rover\GitHub\Software\RoveComm_Tester_Software\PINK
+
+from Sender import *
+test = sendWidget()
