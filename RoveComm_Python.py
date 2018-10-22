@@ -25,21 +25,21 @@ ROVECOMM_SUBSCRIBE_REQUEST   = 3
 ROVECOMM_UNSUBSCRIBE_REQUEST = 4
 
 types_int_to_byte  = {
-						1:'b',
-						2:'B',
-						3:'h',
-						4:'H',
-						5:'l',
-						6:'L',
+						0:'b',
+						1:'B',
+						2:'h',
+						3:'H',
+						4:'l',
+						5:'L',
 					  }
 					  
 types_byte_to_int  = {
-						'b':1,
-						'B':2,
-						'h':3,
-						'H':4,
-						'l':5,
-						'L':6,
+						'b':0,
+						'B':1,
+						'h':2,
+						'H':3,
+						'l':4,
+						'L':5,
 					  }
 					  
 					  
@@ -81,7 +81,7 @@ class RoveCommEthernetUdp:
 		if not isinstance(packet.data, tuple):	
 			raise ValueError('Must pass data as a list, Data: ' + str(data))
 					
-		rovecomm_packet = struct.pack(ROVECOMM_HEADER_FORMAT, packet.data_id, types_byte_to_int[packet.data_type], packet.data_count)
+		rovecomm_packet = struct.pack(ROVECOMM_HEADER_FORMAT, packet.data_id, packet.data_count, types_byte_to_int[packet.data_type])
 		
 		for i in packet.data:
 			rovecomm_packet = rovecomm_packet + struct.pack('>' + packet.data_type, i)
@@ -91,13 +91,13 @@ class RoveCommEthernetUdp:
 		
 		if(packet.ip_address != ('0.0.0.0', 0)):
 			self.RoveCommSocket.sendto(rovecomm_packet, packet.ip_address)
-		
+
 	def read(self):
 		#try:
 			packet, remote_ip = self.RoveCommSocket.recvfrom(1024)
 			header_size = struct.calcsize(ROVECOMM_HEADER_FORMAT)
-		
-			data_id, data_type, data_count = struct.unpack(ROVECOMM_HEADER_FORMAT, packet[0:header_size])
+
+			data_id, data_count, data_type = struct.unpack(ROVECOMM_HEADER_FORMAT, packet[0:header_size])
 			data = packet[header_size:]
 		
 			if(data_id == ROVECOMM_SUBSCRIBE_REQUEST):
@@ -106,10 +106,10 @@ class RoveCommEthernetUdp:
 			elif(data_id == ROVECOMM_UNSUBSCRIBE_REQUEST):
 				if(self.subscribers.count(remote_ip) != 0):
 					self.subscribers.remove(remote_ip)
-			
+
 			data_type = types_int_to_byte[data_type]
-			data = struct.unpack('>' + data_type*data_count, data)
-			
+			data = struct.unpack('>' + data_type * data_count, data)
+
 			returnPacket = RoveCommPacket(data_id, data_type, data, '')
 			returnPacket.ip_address = remote_ip
 			return returnPacket
