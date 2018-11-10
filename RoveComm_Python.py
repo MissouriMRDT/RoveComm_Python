@@ -18,7 +18,7 @@ print (bytes, address)
 print (struct.unpack('L', test_byte))
 '''
 
-ROVECOMM_PORT = 11000
+ROVECOMM_PORT = 248
 ROVECOMM_HEADER_FORMAT = ">HBB"
 
 ROVECOMM_SUBSCRIBE_REQUEST   = 3

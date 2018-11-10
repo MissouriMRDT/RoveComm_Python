@@ -2,6 +2,17 @@ python
 from RoveComm_Python import *
 import struct
 local_host_ip = "127.0.0.1"
+test_board_ip = "192.168.1.141"
+RoveComm = RoveCommEthernetUdp()
+
+packet = RoveCommPacket(1, 'b', (3, 4, 5, 6), '141')
+RoveComm.write(packet)
+
+packet2 = RoveCommPacket()
+packet2 = RoveComm.read()
+packet2.print()
+
+'''
 packet = RoveCommPacket(10, 'b', (3, 4, 5, 6))
 packet2 = RoveCommPacket()
 packet.SetIp(local_host_ip)
@@ -29,3 +40,4 @@ cd C:\Users\andre\Documents\Rover\GitHub\Software\RoveComm_Tester_Software\PINK
 
 from Sender import *
 test = sendWidget()
+'''
