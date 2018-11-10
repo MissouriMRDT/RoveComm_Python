@@ -93,7 +93,7 @@ class RoveCommEthernetUdp:
 			self.RoveCommSocket.sendto(rovecomm_packet, packet.ip_address)
 
 	def read(self):
-		#try:
+		try:
 			packet, remote_ip = self.RoveCommSocket.recvfrom(1024)
 			header_size = struct.calcsize(ROVECOMM_HEADER_FORMAT)
 
@@ -114,7 +114,7 @@ class RoveCommEthernetUdp:
 			returnPacket.ip_address = remote_ip
 			return returnPacket
 			
-		#except:
+		except:
 			returnPacket = RoveCommPacket()
 			return(returnPacket)
 			
