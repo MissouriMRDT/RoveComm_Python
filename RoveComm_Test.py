@@ -4,6 +4,24 @@ import random
 import time
 test_board_ip = "192.168.1.141"
 RoveComm = RoveCommEthernetUdp()
+while(1):
+	packet = RoveCommPacket(2000, 'B', (0,))
+	packet.SetIp('192.168.1.133')
+	RoveComm.write(packet)
+	time.sleep(.5)
+
+
+subscribe = RoveCommPacket(3)
+subscribe.SetIp('192.168.1.133')
+RoveComm.write(subscribe)
+print("sending")
+time.sleep(.1)
+while(1):
+	packet = RoveComm.read()
+	packet.print()
+	time.sleep(.1)
+
+'''
 count = 0
 sleep_time = (.100)
 #Test Data IDs
@@ -12,6 +30,7 @@ count = count + 1
 packet = RoveCommPacket(1, 'b', (1,), '141')
 time.sleep(1)
 RoveComm.write(packet)
+'''
 
 ''' Python Read
 print("Count, Data ID, Data Count, Data")
