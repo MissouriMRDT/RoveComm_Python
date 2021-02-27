@@ -4,6 +4,7 @@ import threading
 import select
 import logging
 import json
+import pathlib
 
 ROVECOMM_UDP_PORT = 11000
 ROVECOMM_TCP_PORT = 11111
@@ -506,7 +507,7 @@ class RoveCommEthernetTcp:
         return packets
 
 
-def get_manifest(filePath="RovecommManifest.json"):
+def get_manifest(filePath):
     """
     Grabs the json manifest file and returns it in dictionary form
 
@@ -521,4 +522,5 @@ def get_manifest(filePath="RovecommManifest.json"):
     manifest = open(filePath, "r").read()
     manifest = json.loads(manifest)
     manifest = manifest["RovecommManifest"]
+    print(pathlib.Path(__file__).parent.absolute())
     return manifest
