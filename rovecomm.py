@@ -518,7 +518,7 @@ def get_manifest(filePath="RovecommManifest.json"):
         manifest - the manifest in dictionary form
     """
 
-    manifest = open("manifest.json", "r").read()
+    manifest = open(filePath, "r").read()
     manifest = json.loads(manifest)
     manifest = manifest["RovecommManifest"]
     return manifest
