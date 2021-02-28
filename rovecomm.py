@@ -507,15 +507,22 @@ class RoveCommEthernetTcp:
         return packets
 
 
-def get_manifest():
+def get_manifest(path=""):
     """
     Grabs the json manifest file and returns it in dictionary form
 
+    Parameters:
+    -----------
+        path - the path to a specified manifest file. If left blank we default 
+        to manifest found in this repo
     Returns:
     --------
         manifest - the manifest in dictionary form
     """
-    manifest = open(str(Path(__file__).parent.absolute())+ "\RovecommManifest.json", "r").read()
+    if path != "":
+        manifest = open(path, "r").read()
+    else:
+        manifest = open(str(Path(__file__).parent.absolute())+ "\RovecommManifest.json", "r").read()
     manifest = json.loads(manifest)
     manifest = manifest["RovecommManifest"]
     return manifest
