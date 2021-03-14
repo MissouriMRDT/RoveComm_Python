@@ -8,6 +8,7 @@ from io import StringIO
 from unittest.mock import Mock
 
 this = sys.modules[__name__]
+sys.path.insert(0, "../")
 
 # Declaring the our rovecomm instance 
 this.rovecomm_node = RoveComm(11000, ("127.0.0.1", 11111))
