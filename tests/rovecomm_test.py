@@ -215,6 +215,31 @@ def test_udp_unsubscribe():
     time.sleep(0.05)
     assert responses.get(4233) is None
 
+def test_set_default_callback():
+    global responses
+    this.rovecomm_node.set_default_callback(handle_packet)
+
+    packet = RoveCommPacket(1212, "b", (1, 3), "127.0.0.1", 11000)
+    assert this.rovecomm_node.write(packet, False) == 1
+
+    # Give the listener thread a moment to catch the packet
+    time.sleep(0.05)
+    assert responses[1212].data == packet.data
+    assert responses[1212].data_type == packet.data_type
+    assert responses[1212].data_count == packet.data_count
+    assert responses[1212].data_id == packet.data_id
+
+def test_clear_default_callback():
+    global responses
+    this.rovecomm_node.clear_default_callback()
+
+    packet = RoveCommPacket(1515, "b", (1, 3), "127.0.0.1", 11000)
+    assert this.rovecomm_node.write(packet, False) == 1
+
+    # Give the listener thread a moment to catch the packet
+    time.sleep(0.05)
+    assert 1515 not in responses
+
 
 def test_invalid_rovecomm_version_tcp():
     global responses

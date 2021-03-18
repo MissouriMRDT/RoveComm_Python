@@ -143,7 +143,10 @@ class RoveComm:
         udp_port=ROVECOMM_UDP_PORT,
         tcp_addr=(socket.gethostbyname(socket.gethostname()), ROVECOMM_TCP_PORT),
     ):
+        # Map of specific function call backs for data ids
         self.callbacks = {}
+        # An optional callback for all incoming packets (can be used for logging, etc)
+        self.default_callback = None
 
         self.udp_node = RoveCommEthernetUdp(udp_port)
         self.tcp_node = RoveCommEthernetTcp(*tcp_addr)
@@ -168,6 +171,8 @@ class RoveComm:
                         self.callbacks[packet.data_id](packet)
                     except Exception:
                         pass
+                    if self.default_callback is not None:
+                        self.default_callback(packet)
 
         self.udp_node.close_socket()
         self.tcp_node.close_sockets()
@@ -186,6 +191,41 @@ class RoveComm:
             func (Function): The function to be called
         """
         self.callbacks[data_id] = func
+    
+    def clear_callback(self, data_id):
+        """
+        Sets the callback function for any incoming packets with the given data id
+
+        Parameters:
+        -----------
+            data_id (Integer): Data id to call the function for
+            func (Function): The function to be called
+        """
+        self.callbacks.pop(data_id)
+
+    def set_default_callback(self, func):
+        """
+        Sets the default callback function that will be called for all incoming 
+        packets. Does not override a specific callback that can be set with 
+        set_callback().
+
+        Parameters:
+        -----------
+            func (Function): The function to be called
+        """
+        self.default_callback = func
+
+    def clear_default_callback(self):
+        """
+        Clears the default callback function that will be called for all incoming 
+        packets. Does not override a specific callback that can be set with 
+        set_callback().
+
+        Parameters:
+        -----------
+            func (Function): The function to be called
+        """
+        self.default_callback = None
 
     def write(self, packet, reliable=False):
         """
@@ -519,10 +559,11 @@ def get_manifest(path=""):
     --------
         manifest - the manifest in dictionary form
     """
+    print(str(Path(__file__).parent))
     if path != "":
         manifest = open(path, "r").read()
     else:
-        manifest = open(str(Path(__file__).parent.absolute())+ "/RovecommManifest.json", "r").read()
+        manifest = open(str(Path(__file__).parent)+ "/RovecommManifest.json", "r").read()
     manifest = json.loads(manifest)
     manifest = manifest["RovecommManifest"]
     return manifest
