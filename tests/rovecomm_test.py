@@ -240,6 +240,17 @@ def test_clear_default_callback():
     time.sleep(0.05)
     assert 1515 not in responses
 
+def test_clear_callback():
+    global responses
+    this.rovecomm_node.set_callback(2121, handle_packet)
+    this.rovecomm_node.clear_callback(2121)
+
+    packet = RoveCommPacket(2121, "b", (1, 3), "127.0.0.1", 11000)
+    assert this.rovecomm_node.write(packet, False) == 1
+
+    # Give the listener thread a moment to catch the packet
+    time.sleep(0.05)
+    assert 2121 not in responses
 
 def test_invalid_rovecomm_version_tcp():
     global responses
