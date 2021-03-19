@@ -191,7 +191,7 @@ class RoveComm:
             func (Function): The function to be called
         """
         self.callbacks[data_id] = func
-    
+
     def clear_callback(self, data_id):
         """
         Sets the callback function for any incoming packets with the given data id
@@ -205,8 +205,8 @@ class RoveComm:
 
     def set_default_callback(self, func):
         """
-        Sets the default callback function that will be called for all incoming 
-        packets. Does not override a specific callback that can be set with 
+        Sets the default callback function that will be called for all incoming
+        packets. Does not override a specific callback that can be set with
         set_callback().
 
         Parameters:
@@ -217,8 +217,8 @@ class RoveComm:
 
     def clear_default_callback(self):
         """
-        Clears the default callback function that will be called for all incoming 
-        packets. Does not override a specific callback that can be set with 
+        Clears the default callback function that will be called for all incoming
+        packets. Does not override a specific callback that can be set with
         set_callback().
 
         Parameters:
@@ -553,17 +553,16 @@ def get_manifest(path=""):
 
     Parameters:
     -----------
-        path - the path to a specified manifest file. If left blank we default 
+        path - the path to a specified manifest file. If left blank we default
         to manifest found in this repo
     Returns:
     --------
         manifest - the manifest in dictionary form
     """
-    print(str(Path(__file__).parent))
     if path != "":
         manifest = open(path, "r").read()
     else:
-        manifest = open(str(Path(__file__).parent)+ "/RovecommManifest.json", "r").read()
+        manifest = open(str(Path(__file__).parent) + "/RovecommManifest.json", "r").read()
     manifest = json.loads(manifest)
     manifest = manifest["RovecommManifest"]
     return manifest
