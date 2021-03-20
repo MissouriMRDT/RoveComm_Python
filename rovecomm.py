@@ -544,6 +544,7 @@ class RoveCommEthernetTcp:
                             returnPacket = RoveCommPacket(ROVECOMM_INCOMPATIBLE_VERSION, "b", (1,), "")
                             returnPacket.SetIp(*open_socket.getpeername())
                             packets.append(returnPacket)
+                            # Remove the parsed packet bytes from buffer
                             buffer = buffer[data_count * types_byte_to_size[data_type_byte] + 5:]
 
                         else:
@@ -553,6 +554,7 @@ class RoveCommEthernetTcp:
                             returnPacket = RoveCommPacket(data_id, data_type, data, "")
                             returnPacket.SetIp(*open_socket.getpeername())
                             packets.append(returnPacket)
+                            # Remove the parsed packet bytes from buffer
                             buffer = buffer[data_count * types_byte_to_size[data_type_byte] + 5:]
 
             except Exception:
