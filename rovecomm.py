@@ -530,7 +530,6 @@ class RoveCommEthernetTcp:
                 buffer = self.buffers[open_socket.getpeername()]
                 header = open_socket.recv(5)
                 buffer.extend(header)
-                print(buffer)
 
                 # If we have enough bytes for the header, parse those
                 if len(self.buffers[open_socket.getpeername()]) >=5:
