@@ -82,7 +82,7 @@ def test_udp_external():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind(("127.0.0.1", 11001))
 
-    rovecomm_packet = struct.pack(">BHBB", 2, 4240, 2, 0)
+    rovecomm_packet = struct.pack(">BHHB", 3, 4240, 2, 0)
     data = (1, 6)
     for i in data:
         rovecomm_packet = rovecomm_packet + struct.pack(">b", i)
@@ -105,7 +105,7 @@ def test_tcp_external():
     # Test socket to try to send to RoveComm over TCP
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("127.0.0.1", 11111))
-    rovecomm_packet = struct.pack(">BHBB", 2, 4239, 2, 0)
+    rovecomm_packet = struct.pack(">BHHB", 3, 4239, 2, 0)
     data = (1, 5)
     for i in data:
         rovecomm_packet = rovecomm_packet + struct.pack(">b", i)
@@ -260,7 +260,7 @@ def test_invalid_rovecomm_version_tcp():
     # Test socket to try to send to RoveComm over TCP
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("127.0.0.1", 11111))
-    rovecomm_packet = struct.pack(">BHBB", 1, 4232, 2, 0)
+    rovecomm_packet = struct.pack(">BHHB", 1, 4232, 2, 0)
     data = (1, 7)
     for i in data:
         rovecomm_packet = rovecomm_packet + struct.pack(">b", i)
@@ -285,7 +285,7 @@ def test_invalid_rovecomm_version_udp():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind(("127.0.0.1", 11001))
 
-    rovecomm_packet = struct.pack(">BHBB", 1, 4231, 2, 0)
+    rovecomm_packet = struct.pack(">BHHB", 1, 4231, 2, 0)
     data = (1, 6)
     for i in data:
         rovecomm_packet = rovecomm_packet + struct.pack(">b", i)
@@ -317,7 +317,7 @@ def test_read_exception_udp():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind(("127.0.0.1", 11001))
 
-    rovecomm_packet = struct.pack(">BHBB", 1, 4230, 2, 0)
+    rovecomm_packet = struct.pack(">BHHB", 1, 4230, 2, 0)
     data = (1, 6)
     for i in data:
         rovecomm_packet = rovecomm_packet + struct.pack(">b", i)

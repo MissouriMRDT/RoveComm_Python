@@ -10,8 +10,8 @@ from pathlib import Path
 
 ROVECOMM_UDP_PORT = 11000
 ROVECOMM_TCP_PORT = 11111
-ROVECOMM_VERSION = 2
-ROVECOMM_HEADER_FORMAT = ">BHBB"
+ROVECOMM_VERSION = 3
+ROVECOMM_HEADER_FORMAT = ">BHHB"
 
 ROVECOMM_PING_REQUEST = 1
 ROVECOMM_PING_REPLY = 2
@@ -357,7 +357,7 @@ class RoveCommEthernetUdp:
                 )
                 data = packet[header_size:]
 
-                if rovecomm_version != 2:
+                if rovecomm_version != ROVECOMM_VERSION:
                     return_packet = RoveCommPacket(ROVECOMM_INCOMPATIBLE_VERSION, "b", (1,), "")
                     return_packet.ip_address = remote_ip
                     return return_packet
@@ -540,7 +540,7 @@ class RoveCommEthernetTcp:
 
                     # If we have enough bytes for header + expected packet size, parse those
                     if len(buffer) >= data_count * types_byte_to_size[data_type_byte] + 5:
-                        if rovecomm_version != 2:
+                        if rovecomm_version != ROVECOMM_VERSION:
                             returnPacket = RoveCommPacket(ROVECOMM_INCOMPATIBLE_VERSION, "b", (1,), "")
                             returnPacket.SetIp(*open_socket.getpeername())
                             packets.append(returnPacket)
