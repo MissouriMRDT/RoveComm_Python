@@ -1,4 +1,4 @@
-from rovecomm import RoveComm, RoveCommPacket
+from rovecomm import RoveComm, RoveCommPacket, ROVECOMM_HEADER_FORMAT, ROVECOMM_VERSION
 import time
 import struct
 import socket
@@ -10,7 +10,7 @@ from unittest.mock import Mock
 this = sys.modules[__name__]
 sys.path.insert(0, "../")
 
-# Declaring the our rovecomm instance 
+# Declaring the our rovecomm instance
 this.rovecomm_node = RoveComm(11000, ("127.0.0.1", 11111))
 
 # Dict of packets, each test will use a different data_id so they don't interfere
@@ -82,7 +82,7 @@ def test_udp_external():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind(("127.0.0.1", 11001))
 
-    rovecomm_packet = struct.pack(">BHHB", 3, 4240, 2, 0)
+    rovecomm_packet = struct.pack(ROVECOMM_HEADER_FORMAT, ROVECOMM_VERSION, 4240, 2, 0)
     data = (1, 6)
     for i in data:
         rovecomm_packet = rovecomm_packet + struct.pack(">b", i)
@@ -105,7 +105,7 @@ def test_tcp_external():
     # Test socket to try to send to RoveComm over TCP
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("127.0.0.1", 11111))
-    rovecomm_packet = struct.pack(">BHHB", 3, 4239, 2, 0)
+    rovecomm_packet = struct.pack(ROVECOMM_HEADER_FORMAT, ROVECOMM_VERSION, 4239, 2, 0)
     data = (1, 5)
     for i in data:
         rovecomm_packet = rovecomm_packet + struct.pack(">b", i)
@@ -215,6 +215,7 @@ def test_udp_unsubscribe():
     time.sleep(0.05)
     assert responses.get(4233) is None
 
+
 def test_set_default_callback():
     global responses
     this.rovecomm_node.set_default_callback(handle_packet)
@@ -229,6 +230,7 @@ def test_set_default_callback():
     assert responses[1212].data_count == packet.data_count
     assert responses[1212].data_id == packet.data_id
 
+
 def test_clear_default_callback():
     global responses
     this.rovecomm_node.clear_default_callback()
@@ -239,6 +241,7 @@ def test_clear_default_callback():
     # Give the listener thread a moment to catch the packet
     time.sleep(0.05)
     assert 1515 not in responses
+
 
 def test_clear_callback():
     global responses
@@ -252,6 +255,7 @@ def test_clear_callback():
     time.sleep(0.05)
     assert 2121 not in responses
 
+
 def test_invalid_rovecomm_version_tcp():
     global responses
     # 5 is the data id for the invalid version return packet
@@ -260,7 +264,7 @@ def test_invalid_rovecomm_version_tcp():
     # Test socket to try to send to RoveComm over TCP
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("127.0.0.1", 11111))
-    rovecomm_packet = struct.pack(">BHHB", 1, 4232, 2, 0)
+    rovecomm_packet = struct.pack(ROVECOMM_HEADER_FORMAT, 1, 4232, 2, 0)
     data = (1, 7)
     for i in data:
         rovecomm_packet = rovecomm_packet + struct.pack(">b", i)
@@ -285,7 +289,7 @@ def test_invalid_rovecomm_version_udp():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind(("127.0.0.1", 11001))
 
-    rovecomm_packet = struct.pack(">BHHB", 1, 4231, 2, 0)
+    rovecomm_packet = struct.pack(ROVECOMM_HEADER_FORMAT, 1, 4231, 2, 0)
     data = (1, 6)
     for i in data:
         rovecomm_packet = rovecomm_packet + struct.pack(">b", i)
@@ -317,7 +321,7 @@ def test_read_exception_udp():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind(("127.0.0.1", 11001))
 
-    rovecomm_packet = struct.pack(">BHHB", 1, 4230, 2, 0)
+    rovecomm_packet = struct.pack(ROVECOMM_HEADER_FORMAT, ROVECOMM_VERSION, 4230, 2, 0)
     data = (1, 6)
     for i in data:
         rovecomm_packet = rovecomm_packet + struct.pack(">b", i)
