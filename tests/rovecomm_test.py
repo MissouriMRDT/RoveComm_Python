@@ -1,4 +1,4 @@
-from rovecomm import RoveComm, RoveCommPacket
+from rovecomm import RoveComm, RoveCommPacket, get_manifest
 import time
 import struct
 import socket
@@ -352,6 +352,12 @@ def test_listener_shutdown():
     this.rovecomm_node = RoveComm(udp_port, tcp_addr)
     this.rovecomm_node.callbacks = callbacks
     assert this.rovecomm_node.thread.is_alive()
+
+def test_get_manifest():
+    # Make sure we can load the manifest and it returns an actual value
+    manifest = get_manifest()
+    assert manifest != None
+
 
 
 def handle_packet(packet):
