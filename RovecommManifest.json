@@ -10,7 +10,17 @@
     "DOUBLE_T": 7,
     "CHAR": 8
   },
-  "dataSizes": [1, 1, 2, 2, 4, 4, 4, 8, 1],
+  "dataSizes": [
+    1,
+    1,
+    2,
+    2,
+    4,
+    4,
+    4,
+    8,
+    1
+  ],
   "SystemPackets": {
     "PING": 1,
     "PING_REPLY": 2,
@@ -21,7 +31,11 @@
   },
   "updateRate": 100,
   "ethernetUDPPort": 11000,
-  "subnetIP": [192, 168, 1],
+  "subnetIP": [
+    192,
+    168,
+    1
+  ],
   "headerLength": 5,
   "RovecommManifest": {
     "Drive": {
@@ -715,8 +729,14 @@
           "dataCount": 2,
           "comments": "[Lat, Lon]"
         },
-        "ClearWaypoints": {
+        "AddPostLeg": {
           "dataId": 11005,
+          "dataType": "DOUBLE_T",
+          "dataCount": 2,
+          "comments": "[Lat, Lon]"
+        },
+        "ClearWaypoints": {
+          "dataId": 11006,
           "dataType": "UINT8_T",
           "dataCount": 1,
           "comments": ""
@@ -760,12 +780,26 @@
     }
   },
   "NetworkDevices": {
-    "BasestationSwitch": { "Ip": "192.168.1.80" },
-    "Rover900MHzRocket": { "Ip": "192.168.1.82" },
-    "Basestation900MHzRocket": { "Ip": "192.168.1.83" },
-    "Rover5GHzRocket": { "Ip": "192.168.1.84" },
-    "Basestation5GHzRocket": { "Ip": "192.168.1.85" },
-    "Rover2_4GHzRocket": { "Ip": "192.168.1.86" },
-    "GrandStream": { "Ip": "192.168.1.226" }
+    "BasestationSwitch": {
+      "Ip": "192.168.1.80"
+    },
+    "Rover900MHzRocket": {
+      "Ip": "192.168.1.82"
+    },
+    "Basestation900MHzRocket": {
+      "Ip": "192.168.1.83"
+    },
+    "Rover5GHzRocket": {
+      "Ip": "192.168.1.84"
+    },
+    "Basestation5GHzRocket": {
+      "Ip": "192.168.1.85"
+    },
+    "Rover2_4GHzRocket": {
+      "Ip": "192.168.1.86"
+    },
+    "GrandStream": {
+      "Ip": "192.168.1.226"
+    }
   }
 }
