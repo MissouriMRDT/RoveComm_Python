@@ -10,8 +10,8 @@ from pathlib import Path
 
 ROVECOMM_UDP_PORT = 11000
 ROVECOMM_TCP_PORT = 11111
-ROVECOMM_VERSION = 2
-ROVECOMM_HEADER_FORMAT = ">BHBB"
+ROVECOMM_VERSION = 25
+ROVECOMM_HEADER_FORMAT = ">BHHB"
 
 ROVECOMM_PING_REQUEST = 1
 ROVECOMM_PING_REPLY = 2
@@ -357,7 +357,7 @@ class RoveCommEthernetUdp:
                 )
                 data = packet[header_size:]
 
-                if rovecomm_version != 2:
+                if rovecomm_version != ROVECOMM_VERSION:
                     return_packet = RoveCommPacket(ROVECOMM_INCOMPATIBLE_VERSION, "b", (1,), "")
                     return_packet.ip_address = remote_ip
                     return return_packet
@@ -528,24 +528,25 @@ class RoveCommEthernetTcp:
         for open_socket in available_sockets:
             try:
                 buffer = self.buffers[open_socket.getpeername()]
-                header = open_socket.recv(5)
+                header_size = struct.calcsize(ROVECOMM_HEADER_FORMAT)
+                header = open_socket.recv(header_size)
                 buffer.extend(header)
 
                 # If we have enough bytes for the header, parse those
-                if len(self.buffers[open_socket.getpeername()]) >=5:
+                if len(self.buffers[open_socket.getpeername()]) >= header_size:
                     rovecomm_version, data_id, data_count, data_type = struct.unpack(ROVECOMM_HEADER_FORMAT, header)
                     data_type_byte = types_int_to_byte[data_type]
                     data = open_socket.recv(data_count * types_byte_to_size[data_type_byte])
                     buffer.extend(data)
 
                     # If we have enough bytes for header + expected packet size, parse those
-                    if len(buffer) >= data_count * types_byte_to_size[data_type_byte] + 5:
-                        if rovecomm_version != 2:
+                    if len(buffer) >= data_count * types_byte_to_size[data_type_byte] + header_size:
+                        if rovecomm_version != ROVECOMM_VERSION:
                             returnPacket = RoveCommPacket(ROVECOMM_INCOMPATIBLE_VERSION, "b", (1,), "")
                             returnPacket.SetIp(*open_socket.getpeername())
                             packets.append(returnPacket)
                             # Remove the parsed packet bytes from buffer
-                            buffer = buffer[data_count * types_byte_to_size[data_type_byte] + 5:]
+                            buffer = buffer[data_count * types_byte_to_size[data_type_byte] + header_size:]
 
                         else:
                             data_type = types_int_to_byte[data_type]
@@ -555,7 +556,7 @@ class RoveCommEthernetTcp:
                             returnPacket.SetIp(*open_socket.getpeername())
                             packets.append(returnPacket)
                             # Remove the parsed packet bytes from buffer
-                            buffer = buffer[data_count * types_byte_to_size[data_type_byte] + 5:]
+                            buffer = buffer[data_count * types_byte_to_size[data_type_byte] + header_size:]
 
             except Exception:
                 returnPacket = RoveCommPacket()
