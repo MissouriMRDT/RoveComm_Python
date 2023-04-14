@@ -9,8 +9,8 @@ import json
 from pathlib import Path
 
 ROVECOMM_UDP_PORT = 11000
-ROVECOMM_TCP_PORT = 11111
-ROVECOMM_VERSION = 25
+ROVECOMM_TCP_PORT = 12000
+ROVECOMM_VERSION = 3
 ROVECOMM_HEADER_FORMAT = ">BHHB"
 
 ROVECOMM_PING_REQUEST = 1
@@ -78,17 +78,15 @@ class RoveCommPacket:
             Prints the packet'c contents
     """
 
-    def __init__(self, data_id=0, data_type="b", data=(), ip_octet_4="", port=ROVECOMM_UDP_PORT):
+    def __init__(self, data_id=0, data_type="b", data=(), ip="", port=ROVECOMM_UDP_PORT):
         self.data_id = data_id
         self.data_type = data_type
         self.data_count = len(data)
         self.data = data
-        # If the ip is less than 4 chars we know it's the 4th octet, otherwise it's the full IP
-        # in case of empty IP default to unknow IP
-        if ip_octet_4 != "" and len(ip_octet_4) < 4:
-            self.ip_address = ("192.168.1." + ip_octet_4, port)
-        elif ip_octet_4 != "" and len(ip_octet_4) >= 4:
-            self.ip_address = (ip_octet_4, port)
+        # IP should be the full IP address
+        # in case of empty IP default to unknown IP
+        if ip_octet_4 != "":
+            self.ip_address = (ip, port)
         else:
             self.ip_address = ("0.0.0.0", 0)
         return
@@ -284,17 +282,17 @@ class RoveCommEthernetUdp:
         self.RoveCommSocket.setblocking(True)
         self.RoveCommSocket.bind(("", self.rove_comm_port))
 
-    def subscribe(self, ip_octet):
+    def subscribe(self, sub_to_ip):
         """
         Parameters:
         -----------
-            ip_octet (String): The ip to subscribe to
+            sub_to_ip (String): The ip to subscribe to
         Returns:
         --------
             success (int): An integer, either 0 or 1 depending on whether or not
             an exception occured during writing
         """
-        return self.write(RoveCommPacket(data_id=3, ip_octet_4=ip_octet))
+        return self.write(RoveCommPacket(data_id=3, ip=sub_to_ip))
 
     def write(self, packet):
         """
