@@ -85,7 +85,7 @@ class RoveCommPacket:
         self.data = data
         # IP should be the full IP address
         # in case of empty IP default to unknown IP
-        if ip_octet_4 != "":
+        if ip != "":
             self.ip_address = (ip, port)
         else:
             self.ip_address = ("0.0.0.0", 0)
