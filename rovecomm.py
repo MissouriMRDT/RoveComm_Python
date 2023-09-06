@@ -578,7 +578,7 @@ def get_manifest(path=""):
     if path != "":
         manifest = open(path, "r").read()
     else:
-        manifest = open(str(Path(__file__).parent) + "/RovecommManifest.json", "r").read()
+        manifest = open(str(Path(__file__).parent) + "/manifest/manifest.json", "r").read()
     manifest = json.loads(manifest)
     manifest = manifest["RovecommManifest"]
     return manifest
