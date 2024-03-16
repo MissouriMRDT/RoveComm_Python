@@ -12,6 +12,7 @@ ROVECOMM_UDP_PORT = 11000
 ROVECOMM_TCP_PORT = 12000
 ROVECOMM_VERSION = 3
 ROVECOMM_HEADER_FORMAT = ">BHHB"
+ROVECOMM_PACKET_MAX_DATA_COUNT = 65535 / 2
 
 ROVECOMM_PING_REQUEST = 1
 ROVECOMM_PING_REPLY = 2
@@ -319,6 +320,8 @@ class RoveCommEthernetUdp:
                 packet.data_count,
                 types_byte_to_int[packet.data_type],
             )
+            
+            # Append data to byte string.
             for i in packet.data:
                 rovecomm_packet = rovecomm_packet + struct.pack(">" + packet.data_type, i)
 
@@ -328,7 +331,8 @@ class RoveCommEthernetUdp:
             if packet.ip_address != ("0.0.0.0", 0):
                 self.RoveCommSocket.sendto(rovecomm_packet, packet.ip_address)
             return 1
-        except Exception:
+        except Exception as error:
+            print("EXCEPTION!", error)
             return 0
 
     def read(self):
@@ -353,7 +357,7 @@ class RoveCommEthernetUdp:
                 rovecomm_version, data_id, data_count, data_type = struct.unpack(
                     ROVECOMM_HEADER_FORMAT, packet[0:header_size]
                 )
-                data = packet[header_size:]
+                data = packet[header_size:header_size + data_count * types_byte_to_size[types_int_to_byte[data_type]]]
 
                 if rovecomm_version != ROVECOMM_VERSION:
                     return_packet = RoveCommPacket(ROVECOMM_INCOMPATIBLE_VERSION, "b", (1,), "")
@@ -374,7 +378,8 @@ class RoveCommEthernetUdp:
                 return_packet.ip_address = remote_ip
                 return return_packet
 
-            except Exception:
+            except Exception as error:
+                print("EXCEPTION!", error)
                 return_packet = RoveCommPacket()
                 return return_packet
 
