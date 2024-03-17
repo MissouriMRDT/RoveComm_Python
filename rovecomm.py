@@ -323,7 +323,7 @@ class RoveCommEthernetUdp:
             
             # Append data to byte string.
             for i in packet.data:
-                rovecomm_packet = rovecomm_packet + struct.pack(">" + packet.data_type, i)
+                rovecomm_packet = rovecomm_packet + struct.pack("!" + packet.data_type, i)
 
             for subscriber in self.subscribers:
                 self.RoveCommSocket.sendto(rovecomm_packet, subscriber)
@@ -334,6 +334,12 @@ class RoveCommEthernetUdp:
         except Exception as error:
             print("EXCEPTION!", error)
             return 0
+
+    def hexify(self, s):
+        """
+        Print bytestring without ASCII hex conversion in the terminal.
+        """
+        return "b'" + re.sub(r'.', lambda m: f'\\x{ord(m.group(0)):02x}', s.decode('latin1')) + "'"
 
     def read(self):
         """
@@ -372,7 +378,7 @@ class RoveCommEthernetUdp:
                         self.subscribers.remove(remote_ip)
 
                 data_type = types_int_to_byte[data_type]
-                data = struct.unpack(">" + data_type * data_count, data)
+                data = struct.unpack("!" + data_type * data_count, data)
 
                 return_packet = RoveCommPacket(data_id, data_type, data, "")
                 return_packet.ip_address = remote_ip
@@ -427,6 +433,12 @@ class RoveCommEthernetTcp:
         # accept up to 5 simulataneous connections, before we start discarding them
         self.server.listen(5)
 
+    def hexify(self, s):
+        """
+        Print bytestring without ASCII hex conversion in the terminal.
+        """
+        return "b'" + re.sub(r'.', lambda m: f'\\x{ord(m.group(0)):02x}', s.decode('latin1')) + "'"
+
     def close_sockets(self):
         """
         Closes all active TCP connections
@@ -462,7 +474,7 @@ class RoveCommEthernetTcp:
                 types_byte_to_int[packet.data_type],
             )
             for i in packet.data:
-                rovecomm_packet = rovecomm_packet + struct.pack(">" + packet.data_type, i)
+                rovecomm_packet = rovecomm_packet + struct.pack("!" + packet.data_type, i)
 
             for address in self.incoming_sockets:
                 self.incoming_sockets[address].send(rovecomm_packet)
@@ -553,7 +565,7 @@ class RoveCommEthernetTcp:
 
                         else:
                             data_type = types_int_to_byte[data_type]
-                            data = struct.unpack(">" + data_type * data_count, data)
+                            data = struct.unpack("!" + data_type * data_count, data)
 
                             returnPacket = RoveCommPacket(data_id, data_type, data, "")
                             returnPacket.SetIp(*open_socket.getpeername())
