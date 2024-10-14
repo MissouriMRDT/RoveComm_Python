@@ -32,10 +32,10 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
           # Fetch and update the submodule to the latest commit from the remote branch
-          git submodule update --remote -- data/RoveComm
+          git submodule update --remote -- manifest
 
           # Ensure Git detects the submodule change by explicitly adding the submodule state
-          git add data/RoveComm
+          git add manifest
           
           # Check for any changes
           git status
