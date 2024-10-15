@@ -1,3 +1,5 @@
+REMOVE ME PLEASE - asolvie
+
 # RoveComm
 The UDP/TCP packet protocol used by all MRDT computing devices
 
