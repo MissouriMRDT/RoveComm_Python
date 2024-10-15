@@ -61,4 +61,4 @@ jobs:
             --reviewer "MissouriMRDT/rovecomm-review"
           fi  
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GH_TOKEN: ${{ secrets.RC_PAT_TOKEN }}
