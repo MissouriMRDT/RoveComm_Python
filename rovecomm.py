@@ -155,7 +155,7 @@ class RoveComm:
     def __init__(
         self,
         udp_port=ROVECOMM_UDP_PORT,
-        tcp_addr=(socket.gethostbyname(socket.gethostname()), ROVECOMM_TCP_PORT),
+        tcp_addr=("0.0.0.0", ROVECOMM_TCP_PORT),
     ):
         # Map of specific function call backs for data ids
         self.callbacks = {}
@@ -427,7 +427,7 @@ class RoveCommEthernetTcp:
             Accepts socket connection requests
     """
 
-    def __init__(self, HOST=socket.gethostbyname(socket.gethostname()), PORT=ROVECOMM_TCP_PORT):
+    def __init__(self, HOST="0.0.0.0", PORT=ROVECOMM_TCP_PORT):
         self.open_sockets = {}
         self.incoming_sockets = {}
         self.buffers = defaultdict(list)
@@ -686,13 +686,13 @@ def decode_print(packet, manifest_path=""):
         board_name = "Unknown"
         packet_type_name = "Unknown"
         packet_name = "Unknown"
-    print("----------")
-    print(f"ID:          {packet.data_id}")
-    print(f"Board:       {board_name}")
-    print(f"Packet Type: {packet_type_name}")
-    print(f"Name:        {packet_name}")
-    print(f"Data Type:   {packet.data_type}")
-    print(f"Count:       {packet.data_count}")
-    print(f"IP:          {packet.ip_address}")
-    print(f"Data:        {packet.data}")
-    print("----------")
+    return f"""----------
+ID:          {packet.data_id}
+Board:       {board_name}
+Packet Type: {packet_type_name}
+Name:        {packet_name}
+Data Type:   {packet.data_type}
+Count:       {packet.data_count}
+IP:          {packet.ip_address}
+Data:        {packet.data}
+---------"""
