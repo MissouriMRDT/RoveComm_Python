@@ -33,7 +33,7 @@ types_int_to_byte = {
     8: "c",
 }
 
-types_byte_to_int = {v: k for k, v in types_int_to_byte}
+types_byte_to_int = {v: k for k, v in types_int_to_byte.items()}
 
 types_byte_to_size = {
     "b": 1,
