@@ -13,7 +13,7 @@ ROVECOMM_UDP_PORT = 11000
 ROVECOMM_TCP_PORT = 12000
 ROVECOMM_VERSION = 3
 ROVECOMM_HEADER_FORMAT = ">BHHB"
-ROVECOMM_PACKET_MAX_DATA_COUNT = 65535 / 3
+ROVECOMM_PACKET_MAX_DATA_COUNT = 65535 // 3
 
 ROVECOMM_PING_REQUEST = 1
 ROVECOMM_PING_REPLY = 2
@@ -174,10 +174,8 @@ class RoveComm:
 
             for packet in packets:
                 if packet is not None:
-                    try:
+                    if packet.data_id in self.callbacks:
                         self.callbacks[packet.data_id](packet)
-                    except:
-                        logging.getLogger(__name__).exception("")
                     if self.default_callback is not None:
                         self.default_callback(packet)
 
