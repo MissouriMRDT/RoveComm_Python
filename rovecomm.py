@@ -1,5 +1,5 @@
 from collections import defaultdict
-import queue
+from time import sleep
 import socket
 import struct
 import threading
@@ -13,7 +13,7 @@ ROVECOMM_UDP_PORT = 11000
 ROVECOMM_TCP_PORT = 12000
 ROVECOMM_VERSION = 3
 ROVECOMM_HEADER_FORMAT = ">BHHB"
-ROVECOMM_PACKET_MAX_DATA_COUNT = 65535 / 2
+ROVECOMM_PACKET_MAX_DATA_COUNT = 65535 / 3
 
 ROVECOMM_PING_REQUEST = 1
 ROVECOMM_PING_REPLY = 2
@@ -33,17 +33,7 @@ types_int_to_byte = {
     8: "c",
 }
 
-types_byte_to_int = {
-    "b": 0,
-    "B": 1,
-    "h": 2,
-    "H": 3,
-    "l": 4,
-    "L": 5,
-    "f": 6,
-    "d": 7,
-    "c": 8,
-}
+types_byte_to_int = {v: k for k, v in types_int_to_byte}
 
 types_byte_to_size = {
     "b": 1,
@@ -53,10 +43,10 @@ types_byte_to_size = {
     "l": 4,
     "L": 4,
     "f": 4,
-    "q": 8,
-    "d": 8,
     "c": 1,
 }
+
+ROVECOMM_TYPE_MAX_SIZE = max(types_byte_to_size.values())
 
 types_manifest_to_byte = {
     "INT8_T": "b",
@@ -92,7 +82,9 @@ class RoveCommPacket:
             Prints the packet'c contents
     """
 
-    def __init__(self, data_id=0, data_type="b", data=(), ip="", port=ROVECOMM_UDP_PORT):
+    def __init__(
+        self, data_id=0, data_type="b", data=(), ip="", port=ROVECOMM_UDP_PORT
+    ):
         self.data_id = data_id
         self.data_type = data_type
         self.data_count = len(data)
@@ -175,6 +167,7 @@ class RoveComm:
         closes when main thread closes or close_thread() is called
         """
         while threading.main_thread().is_alive() and not self.shutdown_event.isSet():
+            sleep(0.01)
             self.tcp_node.handle_incoming_connection()
             packets = self.tcp_node.read()
             packets.append(self.udp_node.read())
@@ -183,8 +176,8 @@ class RoveComm:
                 if packet is not None:
                     try:
                         self.callbacks[packet.data_id](packet)
-                    except Exception:
-                        pass
+                    except:
+                        logging.getLogger(__name__).exception()
                     if self.default_callback is not None:
                         self.default_callback(packet)
 
@@ -333,10 +326,12 @@ class RoveCommEthernetUdp:
                 packet.data_count,
                 types_byte_to_int[packet.data_type],
             )
-            
+
             # Append data to byte string.
             for i in packet.data:
-                rovecomm_packet = rovecomm_packet + struct.pack("!" + packet.data_type, i)
+                rovecomm_packet = rovecomm_packet + struct.pack(
+                    "!" + packet.data_type, i
+                )
 
             for subscriber in self.subscribers:
                 self.RoveCommSocket.sendto(rovecomm_packet, subscriber)
@@ -344,15 +339,19 @@ class RoveCommEthernetUdp:
             if packet.ip_address != ("0.0.0.0", 0):
                 self.RoveCommSocket.sendto(rovecomm_packet, packet.ip_address)
             return 1
-        except Exception as error:
-            print("EXCEPTION!", error)
+        except:
+            logging.getLogger(__name__).exception()
             return 0
 
     def hexify(self, s):
         """
         Print bytestring without ASCII hex conversion in the terminal.
         """
-        return "b'" + re.sub(r'.', lambda m: f'\\x{ord(m.group(0)):02x}', s.decode('latin1')) + "'"
+        return (
+            "b'"
+            + re.sub(r".", lambda m: f"\\x{ord(m.group(0)):02x}", s.decode("latin1"))
+            + "'"
+        )
 
     def read(self):
         """
@@ -370,16 +369,24 @@ class RoveCommEthernetUdp:
         available_sockets = select.select([self.RoveCommSocket], [], [], 0)[0]
         if len(available_sockets) > 0:
             try:
-                packet, remote_ip = self.RoveCommSocket.recvfrom(1024)
                 header_size = struct.calcsize(ROVECOMM_HEADER_FORMAT)
+                packet, remote_ip = self.RoveCommSocket.recvfrom(
+                    header_size
+                    + ROVECOMM_TYPE_MAX_SIZE * ROVECOMM_PACKET_MAX_DATA_COUNT
+                )
 
                 rovecomm_version, data_id, data_count, data_type = struct.unpack(
                     ROVECOMM_HEADER_FORMAT, packet[0:header_size]
                 )
-                data = packet[header_size:header_size + data_count * types_byte_to_size[types_int_to_byte[data_type]]]
+                data = packet[
+                    header_size : header_size
+                    + data_count * types_byte_to_size[types_int_to_byte[data_type]]
+                ]
 
                 if rovecomm_version != ROVECOMM_VERSION:
-                    return_packet = RoveCommPacket(ROVECOMM_INCOMPATIBLE_VERSION, "b", (1,), "")
+                    return_packet = RoveCommPacket(
+                        ROVECOMM_INCOMPATIBLE_VERSION, "b", (1,), ""
+                    )
                     return_packet.ip_address = remote_ip
                     return return_packet
 
@@ -397,10 +404,9 @@ class RoveCommEthernetUdp:
                 return_packet.ip_address = remote_ip
                 return return_packet
 
-            except Exception as error:
-                print("EXCEPTION!", error)
-                return_packet = RoveCommPacket()
-                return return_packet
+            except:
+                logging.getLogger(__name__).exception()
+                return RoveCommPacket()
 
     def close_socket(self):
         """
@@ -440,7 +446,7 @@ class RoveCommEthernetTcp:
         try:
             self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         except AttributeError:
-            pass
+            logging.getLogger(__name__).exception()
         # bind the socket to the current machines local network IP by default (can be specified as well)
         self.server.bind((HOST, PORT))
         # accept up to 5 simulataneous connections, before we start discarding them
@@ -450,7 +456,11 @@ class RoveCommEthernetTcp:
         """
         Print bytestring without ASCII hex conversion in the terminal.
         """
-        return "b'" + re.sub(r'.', lambda m: f'\\x{ord(m.group(0)):02x}', s.decode('latin1')) + "'"
+        return (
+            "b'"
+            + re.sub(r".", lambda m: f"\\x{ord(m.group(0)):02x}", s.decode("latin1"))
+            + "'"
+        )
 
     def close_sockets(self):
         """
@@ -487,7 +497,9 @@ class RoveCommEthernetTcp:
                 types_byte_to_int[packet.data_type],
             )
             for i in packet.data:
-                rovecomm_packet = rovecomm_packet + struct.pack("!" + packet.data_type, i)
+                rovecomm_packet = rovecomm_packet + struct.pack(
+                    "!" + packet.data_type, i
+                )
 
             for address in self.incoming_sockets:
                 self.incoming_sockets[address].send(rovecomm_packet)
@@ -500,7 +512,8 @@ class RoveCommEthernetTcp:
                 self.open_sockets[packet.ip_address].send(rovecomm_packet)
 
             return 1
-        except Exception:
+        except:
+            logging.getLogger(__name__).exception()
             return 0
 
     def connect(self, address):
@@ -511,8 +524,8 @@ class RoveCommEthernetTcp:
             TCPSocket = socket.socket(type=socket.SOCK_STREAM)
             try:
                 TCPSocket.connect(address)
-            except Exception as e:
-                logging.getLogger(__name__).error("Something's wrong. Exception is %s" % (e))
+            except:
+                logging.getLogger(__name__).exception()
                 return 0
             self.open_sockets[address] = TCPSocket
         return 1
@@ -562,19 +575,31 @@ class RoveCommEthernetTcp:
 
                 # If we have enough bytes for the header, parse those
                 if len(self.buffers[open_socket.getpeername()]) >= header_size:
-                    rovecomm_version, data_id, data_count, data_type = struct.unpack(ROVECOMM_HEADER_FORMAT, header)
+                    rovecomm_version, data_id, data_count, data_type = struct.unpack(
+                        ROVECOMM_HEADER_FORMAT, header
+                    )
                     data_type_byte = types_int_to_byte[data_type]
-                    data = open_socket.recv(data_count * types_byte_to_size[data_type_byte])
+                    data = open_socket.recv(
+                        data_count * types_byte_to_size[data_type_byte]
+                    )
                     buffer.extend(data)
 
                     # If we have enough bytes for header + expected packet size, parse those
-                    if len(buffer) >= data_count * types_byte_to_size[data_type_byte] + header_size:
+                    if (
+                        len(buffer)
+                        >= data_count * types_byte_to_size[data_type_byte] + header_size
+                    ):
                         if rovecomm_version != ROVECOMM_VERSION:
-                            returnPacket = RoveCommPacket(ROVECOMM_INCOMPATIBLE_VERSION, "b", (1,), "")
+                            returnPacket = RoveCommPacket(
+                                ROVECOMM_INCOMPATIBLE_VERSION, "b", (1,), ""
+                            )
                             returnPacket.SetIp(*open_socket.getpeername())
                             packets.append(returnPacket)
                             # Remove the parsed packet bytes from buffer
-                            buffer = buffer[data_count * types_byte_to_size[data_type_byte] + header_size:]
+                            buffer = buffer[
+                                data_count * types_byte_to_size[data_type_byte]
+                                + header_size :
+                            ]
 
                         else:
                             data_type = types_int_to_byte[data_type]
@@ -584,11 +609,14 @@ class RoveCommEthernetTcp:
                             returnPacket.SetIp(*open_socket.getpeername())
                             packets.append(returnPacket)
                             # Remove the parsed packet bytes from buffer
-                            buffer = buffer[data_count * types_byte_to_size[data_type_byte] + header_size:]
+                            buffer = buffer[
+                                data_count * types_byte_to_size[data_type_byte]
+                                + header_size :
+                            ]
 
-            except Exception:
-                returnPacket = RoveCommPacket()
-                packets.append(returnPacket)
+            except:
+                logging.getLogger(__name__).exception()
+                packets.append(RoveCommPacket())
 
         return packets
 
@@ -609,20 +637,23 @@ def get_manifest(path=""):
     if path != "":
         manifest = open(path, "r").read()
     else:
-        manifest = open(str(Path(__file__).parent) + "/manifest/manifest.json", "r").read()
+        manifest = open(
+            str(Path(__file__).parent) + "/manifest/manifest.json", "r"
+        ).read()
     manifest = json.loads(manifest)
     manifest = manifest["RovecommManifest"]
     return manifest
+
 
 @lru_cache(maxsize=None)
 def data_ids(manifest_path=""):
     """
     Compiles a list of data_ids
-    
+
     Parameters:
     -----------
         manifest_path - path to manifest file, uses the same default as get_manifest
-    
+
     Returns:
         {data_id: (board_name, packet_type, packet_name), ...}
     """
@@ -632,11 +663,26 @@ def data_ids(manifest_path=""):
         for packet_type_name in ("Commands", "Telemetry", "Error"):
             if packet_type_name not in board_manifest:
                 continue
-            for packet_name, packet_manifest in board_manifest[packet_type_name].items():
-                data_ids_[packet_manifest["dataId"]] = (board_name, packet_type_name, packet_name)
+            for packet_name, packet_manifest in board_manifest[
+                packet_type_name
+            ].items():
+                data_ids_[packet_manifest["dataId"]] = (
+                    board_name,
+                    packet_type_name,
+                    packet_name,
+                )
     return data_ids_
 
-def packet(board_name, packet_type, packet_name, data=(), ip=None, port=ROVECOMM_UDP_PORT, manifest_path=""):
+
+def packet(
+    board_name,
+    packet_type,
+    packet_name,
+    data=(),
+    ip=None,
+    port=ROVECOMM_UDP_PORT,
+    manifest_path="",
+):
     """
     Sends a packet with information found in get_manifest(manifest_path)
 
@@ -657,7 +703,14 @@ def packet(board_name, packet_type, packet_name, data=(), ip=None, port=ROVECOMM
     command_manifest = board_manifest[packet_type][packet_name]
     if ip == None:
         ip = board_manifest["Ip"]
-    return RoveCommPacket(command_manifest["dataId"], types_manifest_to_byte[command_manifest["dataType"]], data, ip, port)
+    return RoveCommPacket(
+        command_manifest["dataId"],
+        types_manifest_to_byte[command_manifest["dataType"]],
+        data,
+        ip,
+        port,
+    )
+
 
 def decode_print(packet, manifest_path=""):
     """
