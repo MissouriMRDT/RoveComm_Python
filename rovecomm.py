@@ -314,9 +314,6 @@ class RoveCommEthernetUdp:
             an exception occured during writing
         """
         try:
-            if not isinstance(packet.data, tuple):
-                raise ValueError("Must pass data as a list, Data: " + str(packet.data))
-
             rovecomm_packet = struct.pack(
                 ROVECOMM_HEADER_FORMAT,
                 ROVECOMM_VERSION,
