@@ -177,7 +177,7 @@ class RoveComm:
                     try:
                         self.callbacks[packet.data_id](packet)
                     except:
-                        logging.getLogger(__name__).exception()
+                        logging.getLogger(__name__).exception("")
                     if self.default_callback is not None:
                         self.default_callback(packet)
 
@@ -340,7 +340,7 @@ class RoveCommEthernetUdp:
                 self.RoveCommSocket.sendto(rovecomm_packet, packet.ip_address)
             return 1
         except:
-            logging.getLogger(__name__).exception()
+            logging.getLogger(__name__).exception("")
             return 0
 
     def hexify(self, s):
@@ -405,7 +405,7 @@ class RoveCommEthernetUdp:
                 return return_packet
 
             except:
-                logging.getLogger(__name__).exception()
+                logging.getLogger(__name__).exception("")
                 return RoveCommPacket()
 
     def close_socket(self):
@@ -446,7 +446,7 @@ class RoveCommEthernetTcp:
         try:
             self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         except AttributeError:
-            logging.getLogger(__name__).exception()
+            logging.getLogger(__name__).exception("")
         # bind the socket to the current machines local network IP by default (can be specified as well)
         self.server.bind((HOST, PORT))
         # accept up to 5 simulataneous connections, before we start discarding them
@@ -513,7 +513,7 @@ class RoveCommEthernetTcp:
 
             return 1
         except:
-            logging.getLogger(__name__).exception()
+            logging.getLogger(__name__).exception("")
             return 0
 
     def connect(self, address):
@@ -525,7 +525,7 @@ class RoveCommEthernetTcp:
             try:
                 TCPSocket.connect(address)
             except:
-                logging.getLogger(__name__).exception()
+                logging.getLogger(__name__).exception("")
                 return 0
             self.open_sockets[address] = TCPSocket
         return 1
@@ -615,7 +615,7 @@ class RoveCommEthernetTcp:
                             ]
 
             except:
-                logging.getLogger(__name__).exception()
+                logging.getLogger(__name__).exception("")
                 packets.append(RoveCommPacket())
 
         return packets
