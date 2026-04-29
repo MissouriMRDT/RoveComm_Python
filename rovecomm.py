@@ -339,16 +339,6 @@ class RoveCommEthernetUdp:
             logging.getLogger(__name__).exception("")
             return 0
 
-    def hexify(self, s):
-        """
-        Print bytestring without ASCII hex conversion in the terminal.
-        """
-        return (
-            "b'"
-            + re.sub(r".", lambda m: f"\\x{ord(m.group(0)):02x}", s.decode("latin1"))
-            + "'"
-        )
-
     def read(self):
         """
         Unpacks the UDP packet and packs it into a RoveComm Packet for easy
@@ -380,11 +370,9 @@ class RoveCommEthernetUdp:
                 ]
 
                 if rovecomm_version != ROVECOMM_VERSION:
-                    return_packet = RoveCommPacket(
-                        ROVECOMM_INCOMPATIBLE_VERSION, "b", (1,), ""
+                    return RoveCommPacket(
+                        ROVECOMM_INCOMPATIBLE_VERSION, "b", (1,), remote_ip
                     )
-                    return_packet.ip_address = remote_ip
-                    return return_packet
 
                 if data_id == ROVECOMM_SUBSCRIBE_REQUEST:
                     if self.subscribers.count(remote_ip) == 0:
@@ -396,10 +384,17 @@ class RoveCommEthernetUdp:
                 data_type = types_int_to_byte[data_type]
                 data = struct.unpack("!" + data_type * data_count, data)
 
-                return_packet = RoveCommPacket(data_id, data_type, data, "")
-                return_packet.ip_address = remote_ip
-                return return_packet
+                if data_id == ROVECOMM_PING_REQUEST:
+                    try:
+                        self.write(
+                            RoveCommPacket(
+                                ROVECOMM_PING_REPLY, data_type, data, remote_ip
+                            )
+                        )
+                    except:
+                        logging.getLogger(__name__).exception("")
 
+                return RoveCommPacket(data_id, data_type, data, remote_ip)
             except:
                 logging.getLogger(__name__).exception("")
                 return RoveCommPacket()
@@ -447,16 +442,6 @@ class RoveCommEthernetTcp:
         self.server.bind((HOST, PORT))
         # accept up to 5 simulataneous connections, before we start discarding them
         self.server.listen(5)
-
-    def hexify(self, s):
-        """
-        Print bytestring without ASCII hex conversion in the terminal.
-        """
-        return (
-            "b'"
-            + re.sub(r".", lambda m: f"\\x{ord(m.group(0)):02x}", s.decode("latin1"))
-            + "'"
-        )
 
     def close_sockets(self):
         """
